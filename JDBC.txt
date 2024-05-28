@@ -1,0 +1,129 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class CRUDOperations {
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/mydatabase";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "password";
+
+    public static void main(String[] args) {
+        try {
+            // Load the MySQL JDBC driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Establish a connection to the database
+            Connection connection = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+
+            // Create a statement to execute SQL queries
+            Statement statement = connection.createStatement();
+
+            // Create a scanner to get user input
+            Scanner scanner = new Scanner(System.in);
+
+            // Main menu
+            while (true) {
+                System.out.println("\n1. Create a new user\n2. Read all users\n3. Update a user\n4. Delete a user\n5. Exit");
+                System.out.print("Choose an option: ");
+                int option = scanner.nextInt();
+
+                switch (option) {
+                    case 1:
+                        createNewUser(statement);
+                        break;
+                    case 2:
+                        readAllUsers(statement);
+                        break;
+                    case 3:
+                        updateUser(statement);
+                        break;
+                    case 4:
+                        deleteUser(statement);
+                        break;
+                    case 5:
+                        System.out.println("Exiting...");
+                        return;
+                    default:
+                        System.out.println("Invalid option. Please choose a valid option.");
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println("MySQL JDBC driver not found.");
+        } catch (SQLException e) {
+            System.out.println("Error connecting to the database: " + e.getMessage());
+        }
+    }
+
+    // Create a new user
+    private static void createNewUser(Statement statement) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the user's name: ");
+        String name = scanner.next();
+
+        System.out.print("Enter the user's email: ");
+        String email = scanner.next();
+
+        // Create a SQL query to insert the new user
+        String query = "INSERT INTO users (name, email) VALUES (?, ?)";
+        PreparedStatement preparedStatement = statement.getConnection().prepareStatement(query);
+        preparedStatement.setString(1, name);
+        preparedStatement.setString(2, email);
+        preparedStatement.executeUpdate();
+
+        System.out.println("User created successfully!");
+    }
+
+    // Read all users
+    private static void readAllUsers(Statement statement) throws SQLException {
+        // Create a SQL query to select all users
+        String query = "SELECT * FROM users";
+        ResultSet resultSet = statement.executeQuery(query);
+
+        // Print all users
+        while (resultSet.next()) {
+            System.out.println("Name: " + resultSet.getString("name"));
+            System.out.println("Email: " + resultSet.getString("email"));
+            System.out.println();
+        }
+    }
+
+    // Update a user
+    private static void updateUser(Statement statement) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the ID of the user to update: ");
+        int id = scanner.nextInt();
+
+        System.out.print("Enter the new name: ");
+        String name = scanner.next();
+
+        System.out.print("Enter the new email: ");
+        String email = scanner.next();
+
+        // Create a SQL query to update the user
+        String query = "UPDATE users SET name = ?, email = ? WHERE id = ?";
+        PreparedStatement preparedStatement = statement.getConnection().prepareStatement(query);
+        preparedStatement.setString(1, name);
+        preparedStatement.setString(2, email);
+        preparedStatement.setInt(3, id);
+        preparedStatement.executeUpdate();
+
+        System.out.println("User updated successfully!");
+    }
+
+    // Delete a user
+    private static void deleteUser(Statement statement) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the ID of the user to delete: ");
+        int id = scanner.nextInt();
+
+        // Create a SQL query to delete the user
+        String query = "DELETE FROM users WHERE id = ?";
+        PreparedStatement preparedStatement = statement.getConnection().prepareStatement(query);
+        preparedStatement.setInt(1, id);
+        preparedStatement.executeUpdate();
+
+        System.out.println("User deleted successfully!");
+    }
+}
